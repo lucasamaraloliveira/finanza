@@ -1,0 +1,84 @@
+
+import { GoogleGenAI, Type } from "@google/genai";
+import { Transaction, Budget, Category, TransactionType } from "../types";
+
+// Always use named parameter for apiKey and obtain it exclusively from process.env.API_KEY
+const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+
+export const getFinancialAdvice = async (transactions: Transaction[], budgets: Budget[], question?: string) => {
+  const model = 'gemini-3-flash-preview';
+  const transactionsContext = transactions.slice(0, 50).map(t => `${t.date}: ${t.description} (${t.category}) - R$ ${t.amount} [${t.type}]`).join('\n');
+  
+  const systemInstruction = `Você é o Consultor Chefe da Finanza. Ajude a família a economizar. 
+  Analise os dados e dê conselhos práticos de economia doméstica. 
+  Responda sempre em Markdown.`;
+
+  const prompt = question 
+    ? `Dúvida do morador: ${question}\n\nResumo: ${transactionsContext}`
+    : `Dê um feedback geral sobre a saúde financeira desta casa baseada nestes gastos:\n${transactionsContext}`;
+
+  try {
+    const response = await ai.models.generateContent({
+      model,
+      contents: prompt,
+      config: { systemInstruction, temperature: 0.7 }
+    });
+    // The .text property is used correctly here.
+    return response.text;
+  } catch (error) {
+    return "Erro ao consultar IA.";
+  }
+};
+
+export const scanReceipt = async (base64Image: string) => {
+  const model = 'gemini-2.5-flash-image';
+  const prompt = "Analise este recibo/nota fiscal e extraia: 1. Nome do estabelecimento (Descrição), 2. Valor Total (Número), 3. Data (AAAA-MM-DD), 4. Sugestão de Categoria Financeira (Supermercado, Saúde, Lazer, etc). Responda apenas o JSON.";
+
+  try {
+    const response = await ai.models.generateContent({
+      model,
+      contents: {
+        parts: [
+          { inlineData: { data: base64Image, mimeType: 'image/jpeg' } },
+          { text: prompt }
+        ]
+      },
+      config: { 
+        responseMimeType: "application/json",
+        responseSchema: {
+          type: Type.OBJECT,
+          properties: {
+            description: { type: Type.STRING },
+            amount: { type: Type.NUMBER },
+            date: { type: Type.STRING },
+            category: { type: Type.STRING }
+          },
+          required: ["description", "amount", "date", "category"]
+        }
+      }
+    });
+    // Accessing .text as a property is correct.
+    return JSON.parse(response.text || '{}');
+  } catch (error) {
+    console.error("Scan error", error);
+    return null;
+  }
+};
+
+export const getFinancialHealthScore = async (transactions: Transaction[]) => {
+  const model = 'gemini-3-flash-preview';
+  const data = transactions.slice(0, 100).map(t => `${t.amount} ${t.type} ${t.category}`).join('|');
+  const prompt = `Baseado nestes dados financeiros, dê uma nota de 0 a 100 para a saúde financeira desta casa e uma justificativa curta. Responda JSON: {score: number, message: string}`;
+
+  try {
+    const response = await ai.models.generateContent({
+      model,
+      contents: prompt,
+      config: { responseMimeType: "application/json" }
+    });
+    // Accessing .text as a property is correct.
+    return JSON.parse(response.text || '{"score": 50, "message": "Dados insuficientes"}');
+  } catch (error) {
+    return { score: 0, message: "Erro na análise" };
+  }
+};
