@@ -14,45 +14,64 @@ interface SidebarProps {
   setIsDarkMode: (isDark: boolean) => void;
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ 
-  view, 
-  setView, 
-  isOpen, 
-  setIsOpen, 
-  isCollapsed, 
-  setIsCollapsed, 
-  isDarkMode, 
-  setIsDarkMode 
+const Sidebar: React.FC<SidebarProps> = ({
+  view,
+  setView,
+  isOpen,
+  setIsOpen,
+  isCollapsed,
+  setIsCollapsed,
+  isDarkMode,
+  setIsDarkMode
 }) => {
-  const menuItems = [
-    { id: 'dashboard', label: 'Dashboard', icon: <ICONS.Dashboard /> },
-    { id: 'transactions', label: 'Transações', icon: <ICONS.History /> },
-    { id: 'annual_comparison', label: 'Comparativo', icon: <ICONS.Budgets /> },
-    { id: 'budgets', label: 'Orçamentos', icon: <ICONS.Budgets /> },
-    { id: 'categories', label: 'Categorias', icon: <ICONS.Settings /> },
-    { id: 'cards', label: 'Cartões', icon: <ICONS.Cards /> },
-    { id: 'vouchers', label: 'Benefícios', icon: <ICONS.Plus /> },
-    { id: 'goals', label: 'Metas e Invest.', icon: <ICONS.Goals /> },
-    { id: 'recurring', label: 'Recorrência', icon: <ICONS.History /> },
-    { id: 'calendar', label: 'Calendário', icon: <ICONS.Calendar /> },
-    { id: 'scanner', label: 'Scanner IA', icon: <ICONS.Scanner /> },
+  const menuGroups = [
+    {
+      title: 'Visão Geral',
+      items: [
+        { id: 'dashboard', label: 'Dashboard', icon: <ICONS.Dashboard /> },
+        { id: 'annual_comparison', label: 'Comparativo', icon: <ICONS.Comparison /> },
+      ]
+    },
+    {
+      title: 'Movimentações',
+      items: [
+        { id: 'transactions', label: 'Transações', icon: <ICONS.History /> },
+        { id: 'calendar', label: 'Calendário', icon: <ICONS.Calendar /> },
+        { id: 'recurring', label: 'Recorrência', icon: <ICONS.Repeat /> },
+        { id: 'scanner', label: 'Scanner IA', icon: <ICONS.Scanner /> },
+      ]
+    },
+    {
+      title: 'Gestão Financeira',
+      items: [
+        { id: 'budgets', label: 'Orçamentos', icon: <ICONS.Budgets /> },
+        { id: 'goals', label: 'Metas e Invest.', icon: <ICONS.Target /> },
+        { id: 'cards', label: 'Cartões', icon: <ICONS.Cards /> },
+        { id: 'vouchers', label: 'Benefícios', icon: <ICONS.Ticket /> },
+      ]
+    },
+    {
+      title: 'Configurações',
+      items: [
+        { id: 'categories', label: 'Categorias', icon: <ICONS.Settings /> },
+      ]
+    }
   ] as const;
 
   return (
     <>
-      <div 
-        className={`fixed inset-0 bg-slate-950/20 backdrop-blur-md z-40 transition-opacity duration-500 lg:hidden ${
-          isOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
-        }`}
+      <div
+        className={`fixed inset-0 bg-slate-950/20 backdrop-blur-md z-40 transition-opacity duration-500 lg:hidden ${isOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
+          }`}
         onClick={() => setIsOpen(false)}
       />
 
       <aside className={`
-        fixed z-50 
+        fixed z-50
         transition-all duration-500 cubic-bezier(0.4, 0, 0.2, 1)
         flex flex-col
         lg:top-6 lg:left-6 lg:bottom-6
-        inset-y-0 left-0 
+        inset-y-0 left-0
         ${isCollapsed ? 'lg:w-20' : 'lg:w-64'}
         ${isOpen ? 'translate-x-0 opacity-100 w-64' : '-translate-x-full lg:translate-x-0'}
         bg-white/70 dark:bg-slate-900/70 backdrop-blur-2xl
@@ -60,10 +79,10 @@ const Sidebar: React.FC<SidebarProps> = ({
         lg:rounded-[2.5rem] shadow-2xl shadow-indigo-500/10
       `}>
         {/* Toggle Button Desktop */}
-        <button 
+        <button
           onClick={() => setIsCollapsed(!isCollapsed)}
           className={`
-            hidden lg:flex absolute -right-3 top-10 w-6 h-6 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 
+            hidden lg:flex absolute -right-3 top-10 w-6 h-6 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700
             rounded-full items-center justify-center text-slate-400 hover:text-indigo-600 transition-all z-50
             ${isCollapsed ? 'rotate-180' : ''}
           `}
@@ -81,7 +100,7 @@ const Sidebar: React.FC<SidebarProps> = ({
             )}
           </div>
           {!isCollapsed && (
-            <button 
+            <button
               onClick={() => setIsOpen(false)}
               className="lg:hidden p-2 text-slate-400 hover:text-indigo-600 transition-colors"
             >
@@ -90,43 +109,56 @@ const Sidebar: React.FC<SidebarProps> = ({
           )}
         </div>
 
-        <nav className={`flex-1 overflow-y-auto py-2 ${isCollapsed ? 'px-2' : 'px-5'} space-y-1.5 scrollbar-none transition-all`}>
-          {!isCollapsed && (
-            <p className="px-4 text-[10px] uppercase font-black text-slate-400 tracking-[0.2em] mb-4 opacity-70 animate-in fade-in duration-300">Navegação</p>
-          )}
-          {menuItems.map((item) => (
-            <button 
-              key={item.id} 
-              onClick={() => { setView(item.id); setIsOpen(false); }}
-              title={isCollapsed ? item.label : ''}
-              className={`
-                w-full flex items-center transition-all duration-300 group relative
-                ${isCollapsed ? 'justify-center py-4 px-0 rounded-2xl' : 'gap-3 px-4 py-3.5 rounded-2xl'}
-                ${view === item.id 
-                  ? 'bg-indigo-600 text-white shadow-xl shadow-indigo-500/20' 
-                  : 'text-slate-500 dark:text-slate-400 hover:bg-white/50 dark:hover:bg-slate-800/50 hover:text-indigo-600 dark:hover:text-indigo-300'
-                }
-              `}
-            >
-              <span className={`transition-transform duration-300 ${view === item.id ? 'scale-110' : 'group-hover:scale-110'} flex-shrink-0`}>
-                {item.icon}
-              </span>
-              {!isCollapsed && (
-                <span className="text-sm font-bold whitespace-nowrap animate-in fade-in slide-in-from-left-1 duration-300">
-                  {item.label}
-                </span>
+        <nav className={`flex-1 overflow-y-auto py-2 ${isCollapsed ? 'px-2' : 'px-5'} scrollbar-none transition-all`}>
+          {menuGroups.map((group, groupIdx) => (
+            <div key={group.title} className={groupIdx > 0 ? 'mt-8' : ''}>
+              {!isCollapsed ? (
+                <div className="px-4 mb-3">
+                  <p className="text-[10px] uppercase font-black text-slate-400 tracking-[0.2em] opacity-70">
+                    {group.title}
+                  </p>
+                </div>
+              ) : (
+                groupIdx > 0 && <div className="mx-4 my-6 border-t border-slate-200 dark:border-slate-800 opacity-50" />
               )}
-              {isCollapsed && view === item.id && (
-                <div className="absolute left-0 w-1 h-6 bg-white rounded-r-full" />
-              )}
-            </button>
+
+              <div className="space-y-1.5">
+                {group.items.map((item) => (
+                  <button
+                    key={item.id}
+                    onClick={() => { setView(item.id); setIsOpen(false); }}
+                    title={isCollapsed ? item.label : ''}
+                    className={`
+                      w-full flex items-center transition-all duration-300 group relative
+                      ${isCollapsed ? 'justify-center py-4 px-0 rounded-2xl' : 'gap-3 px-4 py-3.5 rounded-2xl'}
+                      ${view === item.id
+                        ? 'bg-indigo-600 text-white shadow-xl shadow-indigo-500/20'
+                        : 'text-slate-500 dark:text-slate-400 hover:bg-white/50 dark:hover:bg-slate-800/50 hover:text-indigo-600 dark:hover:text-indigo-300'
+                      }
+                    `}
+                  >
+                    <span className={`transition-transform duration-300 ${view === item.id ? 'scale-110' : 'group-hover:scale-110'} flex-shrink-0`}>
+                      {item.icon}
+                    </span>
+                    {!isCollapsed && (
+                      <span className="text-sm font-bold whitespace-nowrap animate-in fade-in slide-in-from-left-1 duration-300">
+                        {item.label}
+                      </span>
+                    )}
+                    {isCollapsed && view === item.id && (
+                      <div className="absolute left-0 w-1 h-6 bg-white rounded-r-full" />
+                    )}
+                  </button>
+                ))}
+              </div>
+            </div>
           ))}
         </nav>
 
         <div className={`p-6 mt-auto transition-all ${isCollapsed ? 'px-2' : 'px-6'}`}>
           <div className={`bg-slate-100/50 dark:bg-slate-800/40 p-2 rounded-[2rem] border border-white/20 dark:border-slate-700/30 transition-all ${isCollapsed ? 'rounded-2xl' : ''}`}>
-            <button 
-              onClick={() => setIsDarkMode(!isDarkMode)} 
+            <button
+              onClick={() => setIsDarkMode(!isDarkMode)}
               className={`
                 w-full flex items-center justify-center gap-2 rounded-[1.5rem] text-xs font-black uppercase tracking-widest text-slate-600 dark:text-slate-300 bg-white/80 dark:bg-slate-800 shadow-sm transition-all active:scale-95
                 ${isCollapsed ? 'p-3 rounded-xl' : 'px-4 py-3'}
