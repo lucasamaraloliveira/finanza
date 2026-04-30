@@ -221,8 +221,9 @@ export default function Home() {
     await firebaseService.saveCategories(newCats);
   };
 
-  const totalBankBalance = transactions.filter(t => t.type === TransactionType.INCOME).reduce((a, b) => a + b.amount, 0) -
-    transactions.filter(t => t.type === TransactionType.EXPENSE).reduce((a, b) => a + b.amount, 0);
+  const totalBankBalance = (transactions.filter(t => t.type === TransactionType.INCOME).reduce((a, b) => a + b.amount, 0) -
+    transactions.filter(t => t.type === TransactionType.EXPENSE).reduce((a, b) => a + b.amount, 0)) + 
+    cards.reduce((acc, c) => acc + (c.balance || 0), 0);
 
   const totalVoucherBalance = vouchers.reduce((acc, v) => acc + v.balance, 0);
 

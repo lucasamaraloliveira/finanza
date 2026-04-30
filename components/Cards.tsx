@@ -13,6 +13,7 @@ const Cards: React.FC<CardsProps> = ({ cards, transactions, onSave }) => {
   const [name, setName] = useState('');
   const [limit, setLimit] = useState('');
   const [due, setDue] = useState('10');
+  const [balance, setBalance] = useState('');
   const [editingId, setEditingId] = useState<string | null>(null);
 
   useEffect(() => {
@@ -21,11 +22,13 @@ const Cards: React.FC<CardsProps> = ({ cards, transactions, onSave }) => {
       if (card) {
         setName(card.name);
         setLimit(card.limit.toString());
+        setBalance((card.balance || 0).toString());
         setDue(card.dueDay.toString());
       }
     } else {
       setName('');
       setLimit('');
+      setBalance('');
       setDue('10');
     }
   }, [editingId, cards]);
@@ -33,28 +36,31 @@ const Cards: React.FC<CardsProps> = ({ cards, transactions, onSave }) => {
   const handleSave = () => {
     if (!name || !limit) return;
     
+    const cardData = {
+      name,
+      limit: parseFloat(limit),
+      balance: parseFloat(balance) || 0,
+      closingDay: Math.max(1, parseInt(due) - 7),
+      dueDay: parseInt(due),
+    };
+
     if (editingId) {
       onSave(cards.map(c => c.id === editingId ? {
         ...c,
-        name,
-        limit: parseFloat(limit),
-        closingDay: Math.max(1, parseInt(due) - 7),
-        dueDay: parseInt(due),
+        ...cardData
       } : c));
       setEditingId(null);
     } else {
       const newCard: CreditCard = {
         id: crypto.randomUUID(),
-        name,
-        limit: parseFloat(limit),
-        closingDay: Math.max(1, parseInt(due) - 7),
-        dueDay: parseInt(due),
+        ...cardData,
         color: `bg-gradient-to-br from-slate-800 to-slate-900`
       };
       onSave([...cards, newCard]);
     }
     setName('');
     setLimit('');
+    setBalance('');
     setDue('10');
   };
 
@@ -67,7 +73,10 @@ const Cards: React.FC<CardsProps> = ({ cards, transactions, onSave }) => {
           </h3>
           <div className="space-y-3">
              <input type="text" value={name} onChange={e => setName(e.target.value)} placeholder="Instituição (Ex: Nubank)" className="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-800 border-none outline-none font-bold" />
-             <input type="number" value={limit} onChange={e => setLimit(e.target.value)} placeholder="Limite Total R$" className="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-800 border-none outline-none font-black" />
+             <div className="grid grid-cols-2 gap-3">
+               <input type="number" value={limit} onChange={e => setLimit(e.target.value)} placeholder="Limite Crédito" className="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-800 border-none outline-none font-black" />
+               <input type="number" value={balance} onChange={e => setBalance(e.target.value)} placeholder="Saldo Conta" className="w-full px-4 py-3 rounded-xl bg-emerald-50/50 dark:bg-emerald-900/10 border-none outline-none font-black text-emerald-600" />
+             </div>
              <input type="number" value={due} onChange={e => setDue(e.target.value)} placeholder="Dia do Vencimento" className="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-800 border-none outline-none font-bold" />
              <div className="flex gap-2">
                 {editingId && (

@@ -55,6 +55,7 @@ export interface CreditCard {
   id: string;
   name: string;
   limit: number;
+  balance?: number;
   closingDay: number;
   dueDay: number;
   color: string;
