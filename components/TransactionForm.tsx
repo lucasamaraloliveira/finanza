@@ -73,7 +73,7 @@ const TransactionForm: React.FC<TransactionFormProps> = ({ categories, onAdd, on
   };
 
   return (
-    <form onSubmit={handleSubmit} className="bg-white dark:bg-slate-900 p-8 rounded-[2.5rem] shadow-sm border border-slate-200 dark:border-slate-800 space-y-6 transition-all relative">
+    <form onSubmit={handleSubmit} className="bg-white dark:bg-slate-900 p-5 md:p-8 rounded-[2.5rem] shadow-sm border border-slate-200 dark:border-slate-800 space-y-6 transition-all relative">
       <div className="flex items-center justify-between">
         <div>
           <h3 className="text-xl font-black text-slate-800 dark:text-slate-100 tracking-tighter uppercase">

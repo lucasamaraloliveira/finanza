@@ -13,7 +13,12 @@ interface DashboardProps {
 }
 
 const Dashboard: React.FC<DashboardProps> = ({ transactions, budgets, categories, vouchers = [], isDarkMode }) => {
+  const [mounted, setMounted] = useState(false);
   const [health, setHealth] = useState({ score: 0, message: 'Calculando...' });
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
   const forecastPeriod = 30; 
 
   useEffect(() => {
@@ -96,16 +101,16 @@ const Dashboard: React.FC<DashboardProps> = ({ transactions, budgets, categories
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <div className="bg-white dark:bg-slate-900/60 backdrop-blur-md p-8 rounded-[2rem] shadow-sm border border-slate-200/50 dark:border-slate-800/50 transition-all hover:shadow-lg group">
-          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 group-hover:text-indigo-500 transition-colors">Saldo Bancário</p>
-          <h2 className={`text-4xl font-black tracking-tighter ${balance >= 0 ? 'text-indigo-600 dark:text-indigo-400' : 'text-rose-600'}`}>
+          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 group-hover:text-indigo-500 transition-colors whitespace-nowrap">Saldo Bancário</p>
+          <h2 className={`text-4xl font-black tracking-tighter whitespace-nowrap ${balance >= 0 ? 'text-indigo-600 dark:text-indigo-400' : 'text-rose-600'}`}>
             R$ {balance.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
           </h2>
-          <p className="text-[10px] font-bold text-slate-300 dark:text-slate-500 mt-2">Disponível em contas e cartões</p>
+          <p className="text-[10px] font-bold text-slate-300 dark:text-slate-500 mt-2 whitespace-nowrap">Disponível em contas e cartões</p>
         </div>
 
         <div className="bg-white dark:bg-slate-900/60 backdrop-blur-md p-8 rounded-[2rem] shadow-sm border border-slate-200/50 dark:border-slate-800/50 transition-all hover:shadow-lg group">
-          <p className="text-[10px] font-black text-emerald-500 uppercase tracking-widest mb-2">Saldo VA/VR Total</p>
-          <h2 className="text-4xl font-black tracking-tighter text-emerald-600 dark:text-emerald-400">
+          <p className="text-[10px] font-black text-emerald-500 uppercase tracking-widest mb-2 whitespace-nowrap">Saldo VA/VR Total</p>
+          <h2 className="text-4xl font-black tracking-tighter text-emerald-600 dark:text-emerald-400 whitespace-nowrap">
             R$ {totalVoucherBalance.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
           </h2>
           <div className="flex gap-2 mt-2 flex-wrap">
@@ -153,20 +158,22 @@ const Dashboard: React.FC<DashboardProps> = ({ transactions, budgets, categories
               Próximos 30 dias
             </span>
           </div>
-          <ResponsiveContainer width="100%" height="80%">
-            <AreaChart data={forecastData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-              <defs>
-                <linearGradient id="colorBal" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#6366f1" stopOpacity={0.4}/>
-                  <stop offset="95%" stopColor="#6366f1" stopOpacity={0}/>
-                </linearGradient>
-              </defs>
-              <XAxis dataKey="name" stroke="#94a3b8" fontSize={11} fontWeight="bold" tickLine={false} axisLine={false} dy={10} hide={true} />
-              <YAxis hide />
-              <Tooltip contentStyle={tooltipStyles.contentStyle} itemStyle={tooltipStyles.itemStyle} labelStyle={tooltipStyles.labelStyle} formatter={(value: number) => [`R$ ${value.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`, 'Saldo Projetado']} />
-              <Area type="monotone" dataKey="balance" stroke="#6366f1" fillOpacity={1} fill="url(#colorBal)" strokeWidth={4} />
-            </AreaChart>
-          </ResponsiveContainer>
+          {mounted && (
+            <ResponsiveContainer width="100%" height="80%">
+              <AreaChart data={forecastData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                <defs>
+                  <linearGradient id="colorBal" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#6366f1" stopOpacity={0.4}/>
+                    <stop offset="95%" stopColor="#6366f1" stopOpacity={0}/>
+                  </linearGradient>
+                </defs>
+                <XAxis dataKey="name" stroke="#94a3b8" fontSize={11} fontWeight="bold" tickLine={false} axisLine={false} dy={10} hide={true} />
+                <YAxis hide />
+                <Tooltip contentStyle={tooltipStyles.contentStyle} itemStyle={tooltipStyles.itemStyle} labelStyle={tooltipStyles.labelStyle} formatter={(value: any) => [`R$ ${Number(value).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`, 'Saldo Projetado']} />
+                <Area type="monotone" dataKey="balance" stroke="#6366f1" fillOpacity={1} fill="url(#colorBal)" strokeWidth={4} />
+              </AreaChart>
+            </ResponsiveContainer>
+          )}
         </div>
 
         <div className="bg-white dark:bg-slate-900/60 backdrop-blur-md p-8 rounded-[2.5rem] shadow-sm border border-slate-200/50 dark:border-slate-800/50 h-[450px]">
@@ -174,17 +181,19 @@ const Dashboard: React.FC<DashboardProps> = ({ transactions, budgets, categories
             <h3 className="text-xl font-black text-slate-800 dark:text-slate-100 uppercase tracking-tighter">Distribuição</h3>
             <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest bg-slate-100 dark:bg-slate-800 px-3 py-1 rounded-full">Por Categoria</span>
           </div>
-          <ResponsiveContainer width="100%" height="90%">
-            <PieChart>
-              <Pie data={categoryData} cx="50%" cy="40%" innerRadius={65} outerRadius={95} paddingAngle={4} dataKey="value" stroke="none">
-                {categoryData.map((entry, index) => (
-                  <Cell key={index} fill={entry.hex} className="outline-none filter drop-shadow-md" />
-                ))}
-              </Pie>
-              <Tooltip contentStyle={tooltipStyles.contentStyle} itemStyle={tooltipStyles.itemStyle} labelStyle={tooltipStyles.labelStyle} formatter={(value: number) => `R$ ${value.toLocaleString('pt-BR')}`} />
-              <Legend verticalAlign="bottom" height={80} formatter={(value) => <span className="text-[10px] font-black uppercase text-slate-500 dark:text-slate-400 tracking-tighter">{value}</span>} iconType="circle" iconSize={8} wrapperStyle={{ paddingTop: '20px' }} />
-            </PieChart>
-          </ResponsiveContainer>
+          {mounted && (
+            <ResponsiveContainer width="100%" height="90%">
+              <PieChart>
+                <Pie data={categoryData} cx="50%" cy="40%" innerRadius={65} outerRadius={95} paddingAngle={4} dataKey="value" stroke="none">
+                  {categoryData.map((entry, index) => (
+                    <Cell key={index} fill={entry.hex} className="outline-none filter drop-shadow-md" />
+                  ))}
+                </Pie>
+                <Tooltip contentStyle={tooltipStyles.contentStyle} itemStyle={tooltipStyles.itemStyle} labelStyle={tooltipStyles.labelStyle} formatter={(value: any) => `R$ ${Number(value).toLocaleString('pt-BR')}`} />
+                <Legend verticalAlign="bottom" height={80} formatter={(value) => <span className="text-[10px] font-black uppercase text-slate-500 dark:text-slate-400 tracking-tighter">{value}</span>} iconType="circle" iconSize={8} wrapperStyle={{ paddingTop: '20px' }} />
+              </PieChart>
+            </ResponsiveContainer>
+          )}
         </div>
       </div>
     </div>

@@ -53,3 +53,47 @@ export const ICONS = {
   Ticket: () => <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z" /></svg>,
   Target: () => <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 3a8 8 0 100 16 8 8 0 000-16z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 8a3 3 0 100 6 3 3 0 000-6z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-4.35-4.35" /></svg>,
 };
+
+export const VIEW_GROUPS = {
+  overview: {
+    label: 'Resumo',
+    icon: 'Dashboard',
+    views: [
+      { id: 'dashboard', label: 'Dashboard', icon: 'Dashboard' },
+      { id: 'annual_comparison', label: 'Análise Anual', icon: 'Comparison' },
+    ]
+  },
+  activity: {
+    label: 'Atividade',
+    icon: 'History',
+    views: [
+      { id: 'transactions', label: 'Extrato', icon: 'History' },
+      { id: 'calendar', label: 'Calendário', icon: 'Calendar' },
+      { id: 'recurring', label: 'Recorrência', icon: 'Repeat' },
+      { id: 'scanner', label: 'Scanner IA', icon: 'Scanner' },
+    ]
+  },
+  strategy: {
+    label: 'Estratégia',
+    icon: 'Target',
+    views: [
+      { id: 'budgets', label: 'Orçamentos', icon: 'Budgets' },
+      { id: 'goals', label: 'Metas', icon: 'Target' },
+    ]
+  },
+  wallet: {
+    label: 'Carteira',
+    icon: 'Cards',
+    views: [
+      { id: 'cards', label: 'Cartões', icon: 'Cards' },
+      { id: 'vouchers', label: 'Benefícios', icon: 'Ticket' },
+    ]
+  },
+  settings: {
+    label: 'Ajustes',
+    icon: 'Settings',
+    views: [
+      { id: 'categories', label: 'Categorias', icon: 'Settings' },
+    ]
+  }
+};

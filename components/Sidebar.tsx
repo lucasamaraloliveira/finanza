@@ -1,7 +1,7 @@
-
-import React from 'react';
-import { ICONS } from '../constants';
+import { ICONS, VIEW_GROUPS } from '../constants';
 import { ViewType } from '../types';
+import { auth } from '../services/firebaseConfig';
+import { signOut } from 'firebase/auth';
 
 interface SidebarProps {
   view: ViewType;
@@ -24,39 +24,21 @@ const Sidebar: React.FC<SidebarProps> = ({
   isDarkMode,
   setIsDarkMode
 }) => {
-  const menuGroups = [
-    {
-      title: 'Visão Geral',
-      items: [
-        { id: 'dashboard', label: 'Dashboard', icon: <ICONS.Dashboard /> },
-        { id: 'annual_comparison', label: 'Comparativo', icon: <ICONS.Comparison /> },
-      ]
-    },
-    {
-      title: 'Movimentações',
-      items: [
-        { id: 'transactions', label: 'Transações', icon: <ICONS.History /> },
-        { id: 'calendar', label: 'Calendário', icon: <ICONS.Calendar /> },
-        { id: 'recurring', label: 'Recorrência', icon: <ICONS.Repeat /> },
-        { id: 'scanner', label: 'Scanner IA', icon: <ICONS.Scanner /> },
-      ]
-    },
-    {
-      title: 'Gestão Financeira',
-      items: [
-        { id: 'budgets', label: 'Orçamentos', icon: <ICONS.Budgets /> },
-        { id: 'goals', label: 'Metas e Invest.', icon: <ICONS.Target /> },
-        { id: 'cards', label: 'Cartões', icon: <ICONS.Cards /> },
-        { id: 'vouchers', label: 'Benefícios', icon: <ICONS.Ticket /> },
-      ]
-    },
-    {
-      title: 'Configurações',
-      items: [
-        { id: 'categories', label: 'Categorias', icon: <ICONS.Settings /> },
-      ]
-    }
-  ] as const;
+  // Helper to find which group a view belongs to
+  const getActiveGroup = (currentView: ViewType) => {
+    return Object.entries(VIEW_GROUPS).find(([_, group]) => 
+      group.views.some(v => v.id === currentView)
+    )?.[0] || 'overview';
+  };
+
+  const activeGroup = getActiveGroup(view);
+
+  const menuItems = Object.entries(VIEW_GROUPS).map(([id, group]) => ({
+    id,
+    label: group.label,
+    icon: ICONS[group.icon as keyof typeof ICONS](),
+    defaultView: group.views[0].id as ViewType
+  }));
 
   return (
     <>
@@ -109,74 +91,69 @@ const Sidebar: React.FC<SidebarProps> = ({
           )}
         </div>
 
-        <nav className={`flex-1 overflow-y-auto py-2 ${isCollapsed ? 'px-2' : 'px-5'} scrollbar-none transition-all`}>
-          {menuGroups.map((group, groupIdx) => (
-            <div key={group.title} className={groupIdx > 0 ? 'mt-8' : ''}>
-              {!isCollapsed ? (
-                <div className="px-4 mb-3">
-                  <p className="text-[10px] uppercase font-black text-slate-400 tracking-[0.2em] opacity-70">
-                    {group.title}
-                  </p>
-                </div>
-              ) : (
-                groupIdx > 0 && <div className="mx-4 my-6 border-t border-slate-200 dark:border-slate-800 opacity-50" />
-              )}
-
-              <div className="space-y-1.5">
-                {group.items.map((item) => (
-                  <button
-                    key={item.id}
-                    onClick={() => { setView(item.id); setIsOpen(false); }}
-                    title={isCollapsed ? item.label : ''}
-                    className={`
-                      w-full flex items-center transition-all duration-300 group relative
-                      ${isCollapsed ? 'justify-center py-4 px-0 rounded-2xl' : 'gap-3 px-4 py-3.5 rounded-2xl'}
-                      ${view === item.id
-                        ? 'bg-indigo-600 text-white shadow-xl shadow-indigo-500/20'
-                        : 'text-slate-500 dark:text-slate-400 hover:bg-white/50 dark:hover:bg-slate-800/50 hover:text-indigo-600 dark:hover:text-indigo-300'
-                      }
-                    `}
-                  >
-                    <span className={`transition-transform duration-300 ${view === item.id ? 'scale-110' : 'group-hover:scale-110'} flex-shrink-0`}>
-                      {item.icon}
+        <nav className={`flex-1 overflow-y-auto py-6 ${isCollapsed ? 'px-2' : 'px-5'} scrollbar-none transition-all`}>
+          <div className="space-y-2">
+            {menuItems.map((item) => (
+              <button
+                key={item.id}
+                onClick={() => { setView(item.defaultView); setIsOpen(false); }}
+                title={isCollapsed ? item.label : ''}
+                className={`
+                  w-full flex items-center transition-all duration-300 group relative
+                  ${isCollapsed ? 'justify-center py-4 px-0 rounded-2xl' : 'gap-3 px-4 py-3.5 rounded-2xl'}
+                  ${activeGroup === item.id
+                    ? 'bg-indigo-600 text-white shadow-xl shadow-indigo-500/20'
+                    : 'text-slate-500 dark:text-slate-400 hover:bg-white/50 dark:hover:bg-slate-800/50 hover:text-indigo-600 dark:hover:text-indigo-300'
+                  }
+                `}
+              >
+                <div className={`flex flex-col items-center gap-1 transition-transform duration-300 ${activeGroup === item.id ? 'scale-110' : 'group-hover:scale-110'} flex-shrink-0`}>
+                  {item.icon}
+                  {isCollapsed && (
+                    <span className="text-[7px] font-black uppercase tracking-tighter opacity-60 whitespace-nowrap">
+                      {item.label}
                     </span>
-                    {!isCollapsed && (
-                      <span className="text-sm font-bold whitespace-nowrap animate-in fade-in slide-in-from-left-1 duration-300">
-                        {item.label}
-                      </span>
-                    )}
-                    {isCollapsed && view === item.id && (
-                      <div className="absolute left-0 w-1 h-6 bg-white rounded-r-full" />
-                    )}
-                  </button>
-                ))}
-              </div>
-            </div>
-          ))}
+                  )}
+                </div>
+                {!isCollapsed && (
+                  <span className="text-sm font-bold whitespace-nowrap animate-in fade-in slide-in-from-left-1 duration-300">
+                    {item.label}
+                  </span>
+                )}
+                {isCollapsed && activeGroup === item.id && (
+                  <div className="absolute left-0 w-1 h-6 bg-white rounded-r-full" />
+                )}
+              </button>
+            ))}
+          </div>
         </nav>
 
         <div className={`p-6 mt-auto transition-all ${isCollapsed ? 'px-2' : 'px-6'}`}>
-          <div className={`bg-slate-100/50 dark:bg-slate-800/40 p-2 rounded-[2rem] border border-white/20 dark:border-slate-700/30 transition-all ${isCollapsed ? 'rounded-2xl' : ''}`}>
-            <button
-              onClick={() => setIsDarkMode(!isDarkMode)}
-              className={`
-                w-full flex items-center justify-center gap-2 rounded-[1.5rem] text-xs font-black uppercase tracking-widest text-slate-600 dark:text-slate-300 bg-white/80 dark:bg-slate-800 shadow-sm transition-all active:scale-95
-                ${isCollapsed ? 'p-3 rounded-xl' : 'px-4 py-3'}
-              `}
-            >
-              {isDarkMode ? (
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h1M4 12H3m15.364-6.364l.707-.707M6.343 17.657l-.707.707M16.95 16.95l.707.707M7.05 7.05l-.707-.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
-              ) : (
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" /></svg>
-              )}
-              {!isCollapsed && <span className="animate-in fade-in duration-300">{isDarkMode ? 'Light' : 'Dark'}</span>}
-            </button>
-          </div>
           {!isCollapsed && (
-            <div className="mt-4 px-4 flex items-center justify-between animate-in fade-in duration-300">
-              <span className="text-[10px] font-bold text-slate-400 tracking-tighter">Finanza v2.5</span>
-              <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse"></div>
+            <div className="px-4 flex flex-col gap-4 animate-in fade-in duration-300">
+              <button 
+                onClick={() => signOut(auth)}
+                className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-rose-500 transition-colors group"
+              >
+                <div className="w-5 h-5 flex items-center justify-center bg-slate-100 dark:bg-slate-800 rounded-lg group-hover:bg-rose-50 dark:group-hover:bg-rose-900/20 transition-colors">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>
+                </div>
+                Sair do Sistema
+              </button>
+              <div className="flex items-center justify-between opacity-50">
+                <span className="text-[8px] font-black text-slate-400 tracking-tighter">Finanza v2.5</span>
+                <div className="h-1 w-1 rounded-full bg-emerald-500 animate-pulse"></div>
+              </div>
             </div>
+          )}
+          {isCollapsed && (
+            <button 
+              onClick={() => signOut(auth)}
+              className="w-full flex justify-center p-3 text-slate-400 hover:text-rose-500 transition-colors"
+              title="Sair"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>
+            </button>
           )}
         </div>
       </aside>

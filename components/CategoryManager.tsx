@@ -6,9 +6,11 @@ import { PRESET_COLORS, ICONS } from '../constants';
 interface CategoryManagerProps {
   categories: CategoryConfig[];
   onUpdate: (categories: CategoryConfig[]) => void;
+  isDarkMode: boolean;
+  setIsDarkMode: (isDark: boolean) => void;
 }
 
-const CategoryManager: React.FC<CategoryManagerProps> = ({ categories, onUpdate }) => {
+const CategoryManager: React.FC<CategoryManagerProps> = ({ categories, onUpdate, isDarkMode, setIsDarkMode }) => {
   const [name, setName] = useState('');
   const [icon, setIcon] = useState('✨');
   const [selectedColor, setSelectedColor] = useState(PRESET_COLORS[0]);
@@ -42,7 +44,39 @@ const CategoryManager: React.FC<CategoryManagerProps> = ({ categories, onUpdate 
   return (
     <div className="space-y-10 animate-in fade-in duration-500">
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-        <div className="lg:col-span-5 bg-white dark:bg-slate-900 p-8 rounded-[2.5rem] border border-slate-200 dark:border-slate-800 shadow-sm space-y-6">
+        <div className="lg:col-span-5 space-y-8">
+          <div className="bg-white dark:bg-slate-900 p-8 rounded-[2.5rem] border border-slate-200 dark:border-slate-800 shadow-sm space-y-6">
+            <div>
+              <h3 className="text-xl font-black text-slate-800 dark:text-slate-100 uppercase tracking-tighter">Aparência</h3>
+              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Escolha o seu estilo visual</p>
+            </div>
+            
+            <button
+              onClick={() => setIsDarkMode(!isDarkMode)}
+              className="w-full flex items-center justify-between p-4 rounded-2xl bg-slate-50 dark:bg-slate-800 border-2 border-transparent hover:border-indigo-500/30 transition-all group"
+            >
+              <div className="flex items-center gap-3">
+                <div className={`p-3 rounded-xl ${isDarkMode ? 'bg-indigo-600 text-white' : 'bg-amber-100 text-amber-600'}`}>
+                  {isDarkMode ? (
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" /></svg>
+                  ) : (
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h1M4 12H3m15.364-6.364l.707-.707M6.343 17.657l-.707.707M16.95 16.95l.707.707M7.05 7.05l-.707-.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
+                  )}
+                </div>
+                <div className="text-left">
+                  <p className="text-xs font-black uppercase tracking-tight text-slate-800 dark:text-slate-100">
+                    Modo {isDarkMode ? 'Escuro' : 'Claro'}
+                  </p>
+                  <p className="text-[10px] font-medium text-slate-400">Clique para alternar o tema</p>
+                </div>
+              </div>
+              <div className={`w-12 h-6 rounded-full relative transition-colors ${isDarkMode ? 'bg-indigo-600' : 'bg-slate-200'}`}>
+                <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all shadow-sm ${isDarkMode ? 'left-7' : 'left-1'}`} />
+              </div>
+            </button>
+          </div>
+
+          <div className="bg-white dark:bg-slate-900 p-8 rounded-[2.5rem] border border-slate-200 dark:border-slate-800 shadow-sm space-y-6">
           <div>
             <h3 className="text-xl font-black text-slate-800 dark:text-slate-100 uppercase tracking-tighter">Nova Categoria</h3>
             <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Personalize seus lançamentos</p>
@@ -96,6 +130,7 @@ const CategoryManager: React.FC<CategoryManagerProps> = ({ categories, onUpdate 
             >
               Criar Categoria
             </button>
+          </div>
           </div>
         </div>
 

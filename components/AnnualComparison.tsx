@@ -10,7 +10,12 @@ interface AnnualComparisonProps {
 }
 
 const AnnualComparison: React.FC<AnnualComparisonProps> = ({ transactions, isDarkMode, categories }) => {
+  const [mounted, setMounted] = useState(false);
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
+
+  React.useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const years = useMemo(() => {
     const yearsSet = new Set<number>();
@@ -165,32 +170,34 @@ const AnnualComparison: React.FC<AnnualComparisonProps> = ({ transactions, isDar
             </div>
           </div>
           <div className="h-[350px] w-full">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={monthlyData} margin={{ top: 20, right: 10, left: 10, bottom: 5 }}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={isDarkMode ? '#334155' : '#e2e8f0'} />
-                <XAxis 
-                  dataKey="name" 
-                  axisLine={false} 
-                  tickLine={false} 
-                  tick={{ fill: isDarkMode ? '#94a3b8' : '#64748b', fontSize: 12, fontWeight: 'bold' }} 
-                  dy={10}
-                />
-                <YAxis 
-                  axisLine={false} 
-                  tickLine={false} 
-                  tick={{ fill: isDarkMode ? '#94a3b8' : '#64748b', fontSize: 10 }}
-                  tickFormatter={(value) => `R$ ${value >= 1000 ? (value / 1000) + 'k' : value}`}
-                />
-                <Tooltip 
-                  cursor={{ fill: isDarkMode ? '#1e293b' : '#f1f5f9' }}
-                  contentStyle={tooltipStyles.contentStyle}
-                  itemStyle={tooltipStyles.itemStyle}
-                  labelStyle={tooltipStyles.labelStyle}
-                />
-                <Bar dataKey="Entradas" fill="#10b981" radius={[4, 4, 0, 0]} barSize={20} />
-                <Bar dataKey="Saídas" fill="#f43f5e" radius={[4, 4, 0, 0]} barSize={20} />
-              </BarChart>
-            </ResponsiveContainer>
+            {mounted && (
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={monthlyData} margin={{ top: 20, right: 10, left: 10, bottom: 5 }}>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={isDarkMode ? '#334155' : '#e2e8f0'} />
+                  <XAxis 
+                    dataKey="name" 
+                    axisLine={false} 
+                    tickLine={false} 
+                    tick={{ fill: isDarkMode ? '#94a3b8' : '#64748b', fontSize: 12, fontWeight: 'bold' }} 
+                    dy={10}
+                  />
+                  <YAxis 
+                    axisLine={false} 
+                    tickLine={false} 
+                    tick={{ fill: isDarkMode ? '#94a3b8' : '#64748b', fontSize: 10 }}
+                    tickFormatter={(value) => `R$ ${value >= 1000 ? (value / 1000) + 'k' : value}`}
+                  />
+                  <Tooltip 
+                    cursor={{ fill: isDarkMode ? '#1e293b' : '#f1f5f9' }}
+                    contentStyle={tooltipStyles.contentStyle}
+                    itemStyle={tooltipStyles.itemStyle}
+                    labelStyle={tooltipStyles.labelStyle}
+                  />
+                  <Bar dataKey="Entradas" fill="#10b981" radius={[4, 4, 0, 0]} barSize={20} />
+                  <Bar dataKey="Saídas" fill="#f43f5e" radius={[4, 4, 0, 0]} barSize={20} />
+                </BarChart>
+              </ResponsiveContainer>
+            )}
           </div>
         </div>
 
@@ -200,36 +207,38 @@ const AnnualComparison: React.FC<AnnualComparisonProps> = ({ transactions, isDar
             <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest bg-slate-100 dark:bg-slate-800 px-3 py-1 rounded-full">Por Categoria</span>
           </div>
           <div className="h-[350px] w-full">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={monthlyData} margin={{ top: 20, right: 10, left: 10, bottom: 5 }}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={isDarkMode ? '#334155' : '#e2e8f0'} />
-                <XAxis 
-                  dataKey="name" 
-                  axisLine={false} 
-                  tickLine={false} 
-                  tick={{ fill: isDarkMode ? '#94a3b8' : '#64748b', fontSize: 12, fontWeight: 'bold' }} 
-                  dy={10}
-                />
-                <YAxis hide />
-                <Tooltip 
-                  cursor={{ fill: isDarkMode ? '#1e293b' : '#f1f5f9' }}
-                  contentStyle={tooltipStyles.contentStyle}
-                  itemStyle={tooltipStyles.itemStyle}
-                  labelStyle={tooltipStyles.labelStyle}
-                  formatter={(value: number) => `R$ ${value.toLocaleString('pt-BR')}`}
-                />
-                {categories.map(cat => (
-                  <Bar 
-                    key={cat.id} 
-                    dataKey={cat.id} 
-                    name={cat.label} 
-                    stackId="a" 
-                    fill={cat.hex} 
-                    radius={[0, 0, 0, 0]} 
+            {mounted && (
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={monthlyData} margin={{ top: 20, right: 10, left: 10, bottom: 5 }}>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={isDarkMode ? '#334155' : '#e2e8f0'} />
+                  <XAxis 
+                    dataKey="name" 
+                    axisLine={false} 
+                    tickLine={false} 
+                    tick={{ fill: isDarkMode ? '#94a3b8' : '#64748b', fontSize: 12, fontWeight: 'bold' }} 
+                    dy={10}
                   />
-                ))}
-              </BarChart>
-            </ResponsiveContainer>
+                  <YAxis hide />
+                  <Tooltip 
+                    cursor={{ fill: isDarkMode ? '#1e293b' : '#f1f5f9' }}
+                    contentStyle={tooltipStyles.contentStyle}
+                    itemStyle={tooltipStyles.itemStyle}
+                    labelStyle={tooltipStyles.labelStyle}
+                    formatter={(value: any) => `R$ ${Number(value).toLocaleString('pt-BR')}`}
+                  />
+                  {categories.map(cat => (
+                    <Bar 
+                      key={cat.id} 
+                      dataKey={cat.id} 
+                      name={cat.label} 
+                      stackId="a" 
+                      fill={cat.hex} 
+                      radius={[0, 0, 0, 0]} 
+                    />
+                  ))}
+                </BarChart>
+              </ResponsiveContainer>
+            )}
           </div>
         </div>
       </div>
@@ -238,30 +247,32 @@ const AnnualComparison: React.FC<AnnualComparisonProps> = ({ transactions, isDar
         <div className="lg:col-span-4 bg-white dark:bg-slate-900 p-8 rounded-[2.5rem] border border-slate-200 dark:border-slate-800 shadow-sm h-full">
           <h4 className="text-lg font-black text-slate-800 dark:text-slate-100 uppercase tracking-tighter mb-8">Distribuição Anual</h4>
           <div className="h-[300px] relative">
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie
-                  data={categoryTotals}
-                  cx="50%"
-                  cy="50%"
-                  innerRadius={60}
-                  outerRadius={100}
-                  paddingAngle={5}
-                  dataKey="value"
-                  stroke="none"
-                >
-                  {categoryTotals.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.color} className="outline-none" />
-                  ))}
-                </Pie>
-                <Tooltip 
-                  contentStyle={tooltipStyles.contentStyle}
-                  itemStyle={tooltipStyles.itemStyle}
-                  labelStyle={tooltipStyles.labelStyle}
-                  formatter={(value: number) => `R$ ${value.toLocaleString('pt-BR')}`}
-                />
-              </PieChart>
-            </ResponsiveContainer>
+            {mounted && (
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={categoryTotals}
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={60}
+                    outerRadius={100}
+                    paddingAngle={5}
+                    dataKey="value"
+                    stroke="none"
+                  >
+                    {categoryTotals.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.color} className="outline-none" />
+                    ))}
+                  </Pie>
+                  <Tooltip 
+                    contentStyle={tooltipStyles.contentStyle}
+                    itemStyle={tooltipStyles.itemStyle}
+                    labelStyle={tooltipStyles.labelStyle}
+                    formatter={(value: any) => `R$ ${Number(value).toLocaleString('pt-BR')}`}
+                  />
+                </PieChart>
+              </ResponsiveContainer>
+            )}
             <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
               <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Total Gastos</span>
               <span className="text-lg font-black text-slate-900 dark:text-white">R$ {(annualTotals.expense / 1000).toFixed(1)}k</span>

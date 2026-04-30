@@ -28,6 +28,7 @@ export interface Transaction {
 }
 
 export interface Budget {
+  id: string;
   category: Category;
   limit: number;
 }

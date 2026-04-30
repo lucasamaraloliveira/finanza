@@ -17,7 +17,7 @@ const Budgets: React.FC<BudgetsProps> = ({ budgets, transactions, categories, on
     if (exists) {
       onSave(budgets.map(b => b.category === category ? { ...b, limit } : b));
     } else {
-      onSave([...budgets, { category, limit }]);
+      onSave([...budgets, { id: crypto.randomUUID(), category, limit }]);
     }
   };
 

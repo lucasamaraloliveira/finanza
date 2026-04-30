@@ -2,18 +2,17 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import { Transaction, Budget, Category, TransactionType } from "../types";
 
-// Always use named parameter for apiKey and obtain it exclusively from process.env.API_KEY
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+const ai = new GoogleGenAI({ apiKey: process.env.NEXT_PUBLIC_GEMINI_API_KEY || '' });
 
 export const getFinancialAdvice = async (transactions: Transaction[], budgets: Budget[], question?: string) => {
   const model = 'gemini-3-flash-preview';
   const transactionsContext = transactions.slice(0, 50).map(t => `${t.date}: ${t.description} (${t.category}) - R$ ${t.amount} [${t.type}]`).join('\n');
-  
+
   const systemInstruction = `Você é o Consultor Chefe da Finanza. Ajude a família a economizar. 
   Analise os dados e dê conselhos práticos de economia doméstica. 
   Responda sempre em Markdown.`;
 
-  const prompt = question 
+  const prompt = question
     ? `Dúvida do morador: ${question}\n\nResumo: ${transactionsContext}`
     : `Dê um feedback geral sobre a saúde financeira desta casa baseada nestes gastos:\n${transactionsContext}`;
 
@@ -43,7 +42,7 @@ export const scanReceipt = async (base64Image: string) => {
           { text: prompt }
         ]
       },
-      config: { 
+      config: {
         responseMimeType: "application/json",
         responseSchema: {
           type: Type.OBJECT,
@@ -66,7 +65,7 @@ export const scanReceipt = async (base64Image: string) => {
 };
 
 export const getFinancialHealthScore = async (transactions: Transaction[]) => {
-  const model = 'gemini-3-flash-preview';
+  const model = 'gemini-3.1-flash-lite-preview';
   const data = transactions.slice(0, 100).map(t => `${t.amount} ${t.type} ${t.category}`).join('|');
   const prompt = `Baseado nestes dados financeiros, dê uma nota de 0 a 100 para a saúde financeira desta casa e uma justificativa curta. Responda JSON: {score: number, message: string}`;
 
