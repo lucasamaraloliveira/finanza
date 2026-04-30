@@ -31,6 +31,14 @@ export const firebaseService = {
     saveTransaction: async (transaction: Transaction) => {
         await setDoc(doc(db, 'transactions', transaction.id), transaction);
     },
+    saveTransactions: async (transactions: Transaction[]) => {
+        const batch = writeBatch(db);
+        transactions.forEach(t => {
+            const ref = doc(db, 'transactions', t.id);
+            batch.set(ref, t);
+        });
+        await batch.commit();
+    },
     deleteTransaction: async (id: string) => {
         await deleteDoc(doc(db, 'transactions', id));
     },

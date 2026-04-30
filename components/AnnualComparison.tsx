@@ -5,11 +5,12 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Responsive
 
 interface AnnualComparisonProps {
   transactions: Transaction[];
+  cards: any[];
   isDarkMode: boolean;
   categories: CategoryConfig[];
 }
 
-const AnnualComparison: React.FC<AnnualComparisonProps> = ({ transactions, isDarkMode, categories }) => {
+const AnnualComparison: React.FC<AnnualComparisonProps> = ({ transactions, cards, isDarkMode, categories }) => {
   const [mounted, setMounted] = useState(false);
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
 
@@ -29,20 +30,29 @@ const AnnualComparison: React.FC<AnnualComparisonProps> = ({ transactions, isDar
       'Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 
       'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'
     ];
+    const currentMonth = new Date().getMonth();
+    const currentYear = new Date().getFullYear();
 
     return months.map((month, index) => {
+      // Filtrar apenas transações PAGAS
       const filtered = transactions.filter(t => {
         const d = new Date(t.date);
-        return d.getFullYear() === selectedYear && d.getMonth() === index;
+        return d.getFullYear() === selectedYear && d.getMonth() === index && t.paid;
       });
 
-      const income = filtered
+      let income = filtered
         .filter(t => t.type === TransactionType.INCOME)
         .reduce((sum, t) => sum + t.amount, 0);
       
-      const expense = filtered
+      let expense = filtered
         .filter(t => t.type === TransactionType.EXPENSE)
         .reduce((sum, t) => sum + t.amount, 0);
+
+      // Adicionar saldo dos cartões no mês atual (considerado como saldo positivo/bancário)
+      if (selectedYear === currentYear && index === currentMonth) {
+        const totalCardBalance = cards.reduce((acc, c) => acc + (c.balance || 0), 0);
+        income += totalCardBalance;
+      }
 
       // Composição de categorias para este mês
       const catExpenses: Record<string, number> = {};
@@ -50,6 +60,9 @@ const AnnualComparison: React.FC<AnnualComparisonProps> = ({ transactions, isDar
         catExpenses[cat.id] = filtered
           .filter(t => t.type === TransactionType.EXPENSE && t.category === cat.id)
           .reduce((sum, t) => sum + t.amount, 0);
+        
+        // Se for o mês atual, a dívida do cartão entra na categoria 'Cartão' ou similar se existir
+        // Por padrão, vamos apenas somar ao total de saídas do mês
       });
 
       return {
@@ -60,7 +73,7 @@ const AnnualComparison: React.FC<AnnualComparisonProps> = ({ transactions, isDar
         ...catExpenses
       };
     });
-  }, [transactions, selectedYear, categories]);
+  }, [transactions, selectedYear, categories, cards]);
 
   const categoryTotals = useMemo(() => {
     const totals: Record<string, number> = {};

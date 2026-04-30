@@ -9,13 +9,17 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@google-cloud/firestore": "^8.5.0",
     "@google/genai": "^1.51.0",
+    "dotenv": "^17.4.2",
     "firebase": "^12.12.1",
     "firebase-admin": "^13.8.0",
     "next": "16.2.4",
+    "qrcode-terminal": "^0.12.0",
     "react": "19.2.4",
     "react-dom": "19.2.4",
-    "recharts": "^3.8.1"
+    "recharts": "^3.8.1",
+    "whatsapp-web.js": "^1.34.7"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",

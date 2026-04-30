@@ -58,7 +58,7 @@ const Sidebar: React.FC<SidebarProps> = ({
         ${isOpen ? 'translate-x-0 opacity-100 w-64' : '-translate-x-full lg:translate-x-0'}
         bg-white/70 dark:bg-slate-900/70 backdrop-blur-2xl
         border border-white/40 dark:border-slate-800/50
-        lg:rounded-[2.5rem] shadow-2xl shadow-indigo-500/10
+        lg:rounded-[1.5rem] shadow-2xl shadow-indigo-500/10
       `}>
         {/* Toggle Button Desktop */}
         <button
@@ -74,7 +74,11 @@ const Sidebar: React.FC<SidebarProps> = ({
 
         <div className={`p-8 flex items-center ${isCollapsed ? 'justify-center' : 'justify-between'} transition-all`}>
           <div className="flex items-center gap-3">
-            <div className="bg-indigo-600 p-2 rounded-2xl text-white font-bold text-xl shadow-lg shadow-indigo-500/30 flex-shrink-0">F</div>
+            <div className="bg-indigo-600 p-2 rounded-2xl text-white shadow-lg shadow-indigo-500/30 flex-shrink-0">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
             {!isCollapsed && (
               <h1 className="text-xl font-black bg-clip-text text-transparent bg-gradient-to-br from-indigo-600 to-violet-600 tracking-tight animate-in fade-in slide-in-from-left-2 duration-300">
                 Finanza
@@ -91,8 +95,8 @@ const Sidebar: React.FC<SidebarProps> = ({
           )}
         </div>
 
-        <nav className={`flex-1 overflow-y-auto py-6 ${isCollapsed ? 'px-2' : 'px-5'} scrollbar-none transition-all`}>
-          <div className="space-y-2">
+        <nav className={`flex-1 overflow-y-auto py-2 ${isCollapsed ? 'px-2' : 'px-5'} scrollbar-none transition-all`}>
+          <div className={`${isCollapsed ? 'space-y-1' : 'space-y-3'}`}>
             {menuItems.map((item) => (
               <button
                 key={item.id}
@@ -100,7 +104,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                 title={isCollapsed ? item.label : ''}
                 className={`
                   w-full flex items-center transition-all duration-300 group relative
-                  ${isCollapsed ? 'justify-center py-4 px-0 rounded-2xl' : 'gap-3 px-4 py-3.5 rounded-2xl'}
+                  ${isCollapsed ? 'justify-center py-3 px-0 rounded-xl' : 'gap-3 px-4 py-3.5 rounded-2xl'}
                   ${activeGroup === item.id
                     ? 'bg-indigo-600 text-white shadow-xl shadow-indigo-500/20'
                     : 'text-slate-500 dark:text-slate-400 hover:bg-white/50 dark:hover:bg-slate-800/50 hover:text-indigo-600 dark:hover:text-indigo-300'
@@ -108,15 +112,17 @@ const Sidebar: React.FC<SidebarProps> = ({
                 `}
               >
                 <div className={`flex flex-col items-center gap-1 transition-transform duration-300 ${activeGroup === item.id ? 'scale-110' : 'group-hover:scale-110'} flex-shrink-0`}>
-                  {item.icon}
+                  <div className="scale-110">
+                    {item.icon}
+                  </div>
                   {isCollapsed && (
-                    <span className="text-[7px] font-black uppercase tracking-tighter opacity-60 whitespace-nowrap">
+                    <span className="text-[7px] font-black uppercase tracking-tight opacity-60 whitespace-nowrap mt-1 max-w-[64px] truncate px-0.5">
                       {item.label}
                     </span>
                   )}
                 </div>
                 {!isCollapsed && (
-                  <span className="text-sm font-bold whitespace-nowrap animate-in fade-in slide-in-from-left-1 duration-300">
+                  <span className="text-[13px] font-black whitespace-nowrap animate-in fade-in slide-in-from-left-1 duration-300 tracking-tighter uppercase">
                     {item.label}
                   </span>
                 )}
@@ -131,29 +137,11 @@ const Sidebar: React.FC<SidebarProps> = ({
         <div className={`p-6 mt-auto transition-all ${isCollapsed ? 'px-2' : 'px-6'}`}>
           {!isCollapsed && (
             <div className="px-4 flex flex-col gap-4 animate-in fade-in duration-300">
-              <button 
-                onClick={() => signOut(auth)}
-                className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-rose-500 transition-colors group"
-              >
-                <div className="w-5 h-5 flex items-center justify-center bg-slate-100 dark:bg-slate-800 rounded-lg group-hover:bg-rose-50 dark:group-hover:bg-rose-900/20 transition-colors">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>
-                </div>
-                Sair do Sistema
-              </button>
               <div className="flex items-center justify-between opacity-50">
                 <span className="text-[8px] font-black text-slate-400 tracking-tighter">Finanza v2.5</span>
-                <div className="h-1 w-1 rounded-full bg-emerald-500 animate-pulse"></div>
+                <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse"></div>
               </div>
             </div>
-          )}
-          {isCollapsed && (
-            <button 
-              onClick={() => signOut(auth)}
-              className="w-full flex justify-center p-3 text-slate-400 hover:text-rose-500 transition-colors"
-              title="Sair"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>
-            </button>
           )}
         </div>
       </aside>

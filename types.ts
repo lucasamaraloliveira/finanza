@@ -24,6 +24,7 @@ export interface Transaction {
   category: Category;
   date: string;
   userId: string;
+  paid?: boolean;
   cardId?: string;
 }
 

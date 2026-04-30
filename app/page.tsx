@@ -14,6 +14,7 @@ import {
   CategoryConfig
 } from '../types';
 import Dashboard from '../components/Dashboard';
+import Navbar from '../components/Navbar';
 import TransactionForm from '../components/TransactionForm';
 import TransactionList from '../components/TransactionList';
 import AIAdvisor from '../components/AIAdvisor';
@@ -154,8 +155,10 @@ export default function Home() {
     setTransactions(newTransactions);
     await firebaseService.saveTransaction(t);
 
-    setLastAction(t.type === TransactionType.INCOME ? 'income' : 'expense');
-    setTimeout(() => setLastAction(null), 3000);
+    if (t.paid) {
+      setLastAction(t.type === TransactionType.INCOME ? 'income' : 'expense');
+      setTimeout(() => setLastAction(null), 3000);
+    }
 
     if (isRecurring) {
       const day = new Date(t.date).getDate() + 1;
@@ -221,8 +224,8 @@ export default function Home() {
     await firebaseService.saveCategories(newCats);
   };
 
-  const totalBankBalance = (transactions.filter(t => t.type === TransactionType.INCOME).reduce((a, b) => a + b.amount, 0) -
-    transactions.filter(t => t.type === TransactionType.EXPENSE).reduce((a, b) => a + b.amount, 0)) + 
+  const totalBankBalance = (transactions.filter(t => t.type === TransactionType.INCOME && t.paid).reduce((a, b) => a + b.amount, 0) -
+    transactions.filter(t => t.type === TransactionType.EXPENSE && t.paid).reduce((a, b) => a + b.amount, 0)) + 
     cards.reduce((acc, c) => acc + (c.balance || 0), 0);
 
   const totalVoucherBalance = vouchers.reduce((acc, v) => acc + v.balance, 0);
@@ -238,15 +241,28 @@ export default function Home() {
     );
   }
 
+  const togglePaidStatus = async (id: string) => {
+    const updated = transactions.map(t => {
+      if (t.id === id) {
+        const newStatus = !t.paid;
+        if (newStatus) {
+          setLastAction(t.type === TransactionType.INCOME ? 'income' : 'expense');
+          setTimeout(() => setLastAction(null), 3000);
+        }
+        return { ...t, paid: newStatus };
+      }
+      return t;
+    });
+    setTransactions(updated);
+    await firebaseService.saveTransactions(updated);
+  };
+
   const renderContent = () => {
     switch (view) {
       case 'dashboard':
         return (
           <div className="space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-700">
             <div className="flex flex-col gap-8">
-              <div className="w-full">
-                <AIAdvisor transactions={transactions} budgets={budgets} />
-              </div>
 
               <Dashboard
                 transactions={transactions}
@@ -254,12 +270,14 @@ export default function Home() {
                 vouchers={vouchers}
                 isDarkMode={isDarkMode}
                 categories={categories}
+                goals={goals}
+                bankBalance={totalBankBalance}
               />
             </div>
           </div>
         );
       case 'annual_comparison':
-        return <AnnualComparison transactions={transactions} isDarkMode={isDarkMode} categories={categories} />;
+        return <AnnualComparison transactions={transactions} cards={cards} isDarkMode={isDarkMode} categories={categories} />;
       case 'categories':
         return <CategoryManager categories={categories} onUpdate={handleSetCategories} isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} />;
       case 'vouchers':
@@ -283,7 +301,6 @@ export default function Home() {
                 <h2 className="text-3xl font-black text-slate-900 dark:text-white uppercase tracking-tight">Metas e Investimentos</h2>
                 <p className="text-slate-500 text-sm">Construindo seu patrimônio passo a passo</p>
               </div>
-              <FinancialMascot score={healthScore} />
             </div>
             <Goals goals={goals} onSave={handleSetGoals} />
           </div>
@@ -304,8 +321,8 @@ export default function Home() {
                 <ICONS.Download /> Exportar CSV
               </button>
             </div>
-            <div className="grid grid-cols-1 xl:grid-cols-12 gap-8">
-              <div className="xl:col-span-5 2xl:col-span-4">
+            <div className="grid grid-cols-1 xl:grid-cols-12 gap-4">
+              <div className="xl:col-span-4 2xl:col-span-4">
                 <TransactionForm
                   categories={categories}
                   onAdd={addTransaction}
@@ -314,12 +331,13 @@ export default function Home() {
                   onCancel={() => setEditingTransaction(null)}
                 />
               </div>
-              <div className="xl:col-span-7 2xl:col-span-8">
+              <div className="xl:col-span-8 2xl:col-span-8">
                 <TransactionList
                   transactions={transactions}
                   categories={categories}
                   onDelete={deleteTransaction}
                   onEdit={(t) => { setEditingTransaction(t); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+                  onTogglePaid={togglePaidStatus}
                 />
               </div>
             </div>
@@ -398,23 +416,25 @@ export default function Home() {
         </div>
 
         <div className="flex-1 w-full max-w-[1920px] mx-auto">
-          <main className="p-4 md:p-8 lg:p-12 space-y-12">
+          <main className="p-4 md:p-6 lg:p-8 space-y-12">
+            <div className="relative z-50 mb-4">
+              <Navbar 
+                user={user} 
+                setView={setView} 
+                isDarkMode={isDarkMode} 
+                setIsDarkMode={setIsDarkMode} 
+              />
+            </div>
             <div className="hidden lg:block">
-              <div className="flex flex-wrap items-end justify-between gap-6">
-                <div className="flex flex-col gap-4">
-                  <div className="flex items-center gap-2">
-                    <span className="h-1.5 w-1.5 rounded-full bg-indigo-500"></span>
-                    <p className="text-slate-400 font-bold text-[10px] uppercase tracking-widest">Finança Residencial</p>
-                  </div>
-                  <div className="flex items-center gap-6">
-                    <h2 className="text-3xl xl:text-4xl font-black text-slate-900 dark:text-white tracking-tighter uppercase whitespace-nowrap">
-                      {Object.values(VIEW_GROUPS).find(g => g.views.some(v => v.id === view))?.label || 'Overview'}
-                    </h2>
-                    <SubNav currentView={view} setView={setView} />
-                  </div>
+              <div className="flex flex-wrap items-center justify-between gap-6 border-b border-slate-100 dark:border-slate-800/50 pb-6">
+                <div className="flex items-center gap-6">
+                  <h2 className="text-3xl xl:text-4xl font-black text-slate-900 dark:text-white tracking-tighter uppercase whitespace-nowrap">
+                    {Object.values(VIEW_GROUPS).find(g => g.views.some(v => v.id === view))?.label || 'Overview'}
+                  </h2>
+                  <SubNav currentView={view} setView={setView} />
                 </div>
 
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-4">
                   <div className="flex items-center gap-3 bg-white/50 dark:bg-slate-900/50 backdrop-blur-md p-3 rounded-2xl border border-white/20 dark:border-slate-800 flex-shrink-0 shadow-sm">
                     <div className="w-8 h-8 bg-indigo-50 dark:bg-indigo-900/30 rounded-xl flex items-center justify-center text-indigo-600 flex-shrink-0">
                       <ICONS.Dashboard />
@@ -455,6 +475,15 @@ export default function Home() {
           </div>
         </footer>
       </div>
+      <FinancialMascot 
+        score={healthScore} 
+        lastAction={lastAction}
+        transactions={transactions}
+        budgets={budgets}
+        goals={goals}
+        cards={cards}
+        vouchers={vouchers}
+      />
     </div>
   );
 }

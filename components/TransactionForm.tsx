@@ -73,26 +73,26 @@ const TransactionForm: React.FC<TransactionFormProps> = ({ categories, onAdd, on
   };
 
   return (
-    <form onSubmit={handleSubmit} className="bg-white dark:bg-slate-900 p-5 md:p-8 rounded-[2.5rem] shadow-sm border border-slate-200 dark:border-slate-800 space-y-6 transition-all relative">
-      <div className="flex items-center justify-between">
+    <form onSubmit={handleSubmit} className="bg-white dark:bg-slate-900 p-5 md:p-6 rounded-[2.5rem] shadow-sm border border-slate-200 dark:border-slate-800 space-y-4 transition-all relative">
+      <div className="space-y-4">
         <div>
           <h3 className="text-xl font-black text-slate-800 dark:text-slate-100 tracking-tighter uppercase">
             {editData ? 'Editar Lançamento' : 'Novo Lançamento'}
           </h3>
           <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Gestão de Fluxo de Caixa</p>
         </div>
-        <div className="flex bg-slate-100 dark:bg-slate-800 p-1 rounded-xl">
+        <div className="flex bg-slate-100 dark:bg-slate-800 p-1 rounded-xl w-full">
           <button
             type="button"
             onClick={() => setType(TransactionType.EXPENSE)}
-            className={`px-4 py-1.5 rounded-lg text-[10px] font-black uppercase transition-all ${type === TransactionType.EXPENSE ? 'bg-rose-500 text-white shadow-lg' : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-200'}`}
+            className={`flex-1 py-2 rounded-lg text-[10px] font-black uppercase transition-all ${type === TransactionType.EXPENSE ? 'bg-rose-500 text-white shadow-lg' : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-200'}`}
           >
             Saída
           </button>
           <button
             type="button"
             onClick={() => setType(TransactionType.INCOME)}
-            className={`px-4 py-1.5 rounded-lg text-[10px] font-black uppercase transition-all ${type === TransactionType.INCOME ? 'bg-emerald-500 text-white shadow-lg' : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-200'}`}
+            className={`flex-1 py-2 rounded-lg text-[10px] font-black uppercase transition-all ${type === TransactionType.INCOME ? 'bg-emerald-500 text-white shadow-lg' : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-200'}`}
           >
             Entrada
           </button>
@@ -177,7 +177,7 @@ const TransactionForm: React.FC<TransactionFormProps> = ({ categories, onAdd, on
         )}
       </div>
 
-      <div className="flex gap-4">
+      <div className="flex gap-3">
         {editData && (
           <button
             type="button"

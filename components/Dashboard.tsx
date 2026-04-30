@@ -1,6 +1,6 @@
 
 import React, { useEffect, useState } from 'react';
-import { Transaction, TransactionType, Budget, Voucher, CategoryConfig } from '../types';
+import { Transaction, TransactionType, Budget, Voucher, CategoryConfig, SavingsGoal } from '../types';
 import { PieChart, Pie, Cell, ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip, Legend } from 'recharts';
 import { getFinancialHealthScore } from '../services/geminiService';
 
@@ -8,17 +8,20 @@ interface DashboardProps {
   transactions: Transaction[];
   budgets: Budget[];
   categories: CategoryConfig[];
+  goals: SavingsGoal[];
+  bankBalance: number;
   vouchers?: Voucher[];
   isDarkMode?: boolean;
 }
 
-const Dashboard: React.FC<DashboardProps> = ({ transactions, budgets, categories, vouchers = [], isDarkMode }) => {
+const Dashboard: React.FC<DashboardProps> = ({ transactions, budgets, categories, goals = [], bankBalance, vouchers = [], isDarkMode }) => {
   const [mounted, setMounted] = useState(false);
   const [health, setHealth] = useState({ score: 0, message: 'Calculando...' });
 
   useEffect(() => {
     setMounted(true);
   }, []);
+  
   const forecastPeriod = 30; 
 
   useEffect(() => {
@@ -27,8 +30,8 @@ const Dashboard: React.FC<DashboardProps> = ({ transactions, budgets, categories
     }
   }, [transactions]);
 
-  const totalIncome = transactions.filter(t => t.type === TransactionType.INCOME).reduce((acc, t) => acc + t.amount, 0);
-  const totalExpense = transactions.filter(t => t.type === TransactionType.EXPENSE).reduce((acc, t) => acc + t.amount, 0);
+  const totalIncome = transactions.filter(t => t.type === TransactionType.INCOME && t.paid).reduce((acc, t) => acc + t.amount, 0);
+  const totalExpense = transactions.filter(t => t.type === TransactionType.EXPENSE && t.paid).reduce((acc, t) => acc + t.amount, 0);
   const balance = totalIncome - totalExpense;
 
   const totalVoucherBalance = vouchers.reduce((acc, v) => acc + v.balance, 0);
@@ -102,8 +105,8 @@ const Dashboard: React.FC<DashboardProps> = ({ transactions, budgets, categories
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <div className="bg-white dark:bg-slate-900/60 backdrop-blur-md p-8 rounded-[2rem] shadow-sm border border-slate-200/50 dark:border-slate-800/50 transition-all hover:shadow-lg group">
           <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 group-hover:text-indigo-500 transition-colors whitespace-nowrap">Saldo Bancário</p>
-          <h2 className={`text-4xl font-black tracking-tighter whitespace-nowrap ${balance >= 0 ? 'text-indigo-600 dark:text-indigo-400' : 'text-rose-600'}`}>
-            R$ {balance.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+          <h2 className={`text-4xl font-black tracking-tighter whitespace-nowrap ${bankBalance >= 0 ? 'text-indigo-600 dark:text-indigo-400' : 'text-rose-600'}`}>
+            R$ {bankBalance.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
           </h2>
           <p className="text-[10px] font-bold text-slate-300 dark:text-slate-500 mt-2 whitespace-nowrap">Disponível em contas e cartões</p>
         </div>
@@ -124,23 +127,21 @@ const Dashboard: React.FC<DashboardProps> = ({ transactions, budgets, categories
         </div>
 
         <div className="bg-white dark:bg-slate-900/60 backdrop-blur-md p-8 rounded-[2rem] shadow-sm border border-slate-200/50 dark:border-slate-800/50 transition-all hover:shadow-lg lg:col-span-1 md:col-span-2">
-           <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-5">Metas de Orçamentos</h4>
+           <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-5">Meta</h4>
            <div className="space-y-4">
-              {budgets.length === 0 ? (
-                <div className="py-2 text-slate-400 text-sm font-medium italic">Sem orçamentos ativos.</div>
+              {goals.length === 0 ? (
+                <div className="py-2 text-slate-400 text-sm font-medium italic">Sem metas ativas.</div>
               ) : (
-                budgets.slice(0, 2).map(b => {
-                  const spent = transactions.filter(t => t.category === b.category && t.type === TransactionType.EXPENSE).reduce((acc, t) => acc + t.amount, 0);
-                  const percent = Math.min(Math.round((spent / b.limit) * 100), 100);
-                  const cat = categories.find(c => c.id === b.category);
+                goals.slice(0, 2).map(goal => {
+                  const percent = Math.min(Math.round((goal.currentAmount / goal.targetAmount) * 100), 100);
                   return (
-                    <div key={b.category} className="space-y-2">
+                    <div key={goal.id} className="space-y-2">
                       <div className="flex justify-between items-end">
-                        <span className="text-[10px] font-black text-slate-600 dark:text-slate-300 uppercase">{cat?.label || b.category}</span>
+                        <span className="text-[10px] font-black text-slate-600 dark:text-slate-300 uppercase">{goal.icon} {goal.name}</span>
                         <span className="text-[10px] font-bold text-slate-400">{percent}%</span>
                       </div>
                       <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-2 overflow-hidden border border-slate-200/50 dark:border-slate-700/50">
-                        <div className={`h-full transition-all duration-1000 shadow-sm ${percent > 90 ? 'bg-rose-500' : 'bg-indigo-600'}`} style={{ width: `${percent}%` }} />
+                        <div className={`h-full transition-all duration-1000 shadow-sm bg-indigo-600`} style={{ width: `${percent}%` }} />
                       </div>
                     </div>
                   );

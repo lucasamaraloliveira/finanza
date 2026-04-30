@@ -74,10 +74,9 @@ export const VIEW_GROUPS = {
     ]
   },
   strategy: {
-    label: 'Estratégia',
+    label: 'Meta',
     icon: 'Target',
     views: [
-      { id: 'budgets', label: 'Orçamentos', icon: 'Budgets' },
       { id: 'goals', label: 'Metas', icon: 'Target' },
     ]
   },
@@ -89,11 +88,4 @@ export const VIEW_GROUPS = {
       { id: 'vouchers', label: 'Benefícios', icon: 'Ticket' },
     ]
   },
-  settings: {
-    label: 'Ajustes',
-    icon: 'Settings',
-    views: [
-      { id: 'categories', label: 'Categorias', icon: 'Settings' },
-    ]
-  }
 };
