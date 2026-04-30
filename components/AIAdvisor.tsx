@@ -17,7 +17,7 @@ const AIAdvisor: React.FC<AIAdvisorProps> = ({ transactions, budgets }) => {
   const handleGetAdvice = async () => {
     setLoading(true);
     const result = await getFinancialAdvice(transactions, budgets, question);
-    setAdvice(result);
+    setAdvice(result || "Não foi possível gerar um conselho agora.");
     setLoading(false);
   };
 

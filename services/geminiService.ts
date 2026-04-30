@@ -23,7 +23,7 @@ export const getFinancialAdvice = async (transactions: Transaction[], budgets: B
       config: { systemInstruction, temperature: 0.7 }
     });
     // The .text property is used correctly here.
-    return response.text;
+    return response.text || "Sem conselhos disponíveis.";
   } catch (error) {
     return "Erro ao consultar IA.";
   }
